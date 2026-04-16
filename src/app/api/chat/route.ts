@@ -1,4 +1,4 @@
-import { GoogleGenAI } from '@google/genai';
+import { generateWithRetry } from '@/lib/ai';
 import { NextResponse } from 'next/server';
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY!;
@@ -11,8 +11,6 @@ export async function POST(request: Request) {
     if (!message) {
       return NextResponse.json({ error: 'Message is required' }, { status: 400 });
     }
-
-    const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
 
     // Prepare system instructions based on whether we are viewing a policy
     const systemInstruction = `You are the PolicyLens AI Assistant. 
@@ -40,8 +38,7 @@ Context: ${context ? JSON.stringify(context) : 'No specific policy selected.'}
       parts: [{ text: message }]
     });
 
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
+    const response = await generateWithRetry('gemini-1.5-pro', {
       contents: formattedHistory,
       config: {
         systemInstruction: systemInstruction,

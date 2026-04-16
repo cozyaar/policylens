@@ -1,4 +1,4 @@
-import { GoogleGenAI } from '@google/genai';
+import { generateWithRetry } from './ai';
 import type { Policy, PolicyFeatures, ScoreDimension, Loophole, ProfileFit, PairingOption } from '../data/policies';
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY!;
@@ -74,13 +74,9 @@ SCORING WEIGHTS for overallScore calculation:
 overallScore = round(Coverage*0.25 + Claims*0.20 + Restrictions*0.20 + Waiting*0.15 + Value*0.20)
 
 Aim for 3-5 loopholes ranked by severity. Be honest and critical — this is a trust product.`;
-
 export async function analyzePolicy(policyQuery: string): Promise<Policy> {
-  const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
-
-  const response = await ai.models.generateContent({
-    model: 'gemini-2.5-flash',
-    contents: `${ANALYSIS_PROMPT}\n\nAnalyze this Indian health insurance policy using Google Search to find accurate, up-to-date policy documents and brochures:\n"${policyQuery}"\n\nReturn EXACTLY and ONLY the JSON object. No markdown formatting around the JSON.`,
+  const response = await generateWithRetry('gemini-1.5-pro', {
+    contents: [{ role: 'user', parts: [{ text: `${ANALYSIS_PROMPT}\n\nAnalyze this Indian health insurance policy using Google Search to find accurate, up-to-date policy documents and brochures:\n"${policyQuery}"\n\nReturn EXACTLY and ONLY the JSON object. No markdown formatting around the JSON.` }] }],
     config: {
       temperature: 0.1,
       tools: [{ googleSearch: {} }],
