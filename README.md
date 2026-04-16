@@ -1,4 +1,4 @@
-# PolicyLens 🔍
+# PolicyLens 
 
 PolicyLens makes finding the right health insurance policy less of a headache. I built this to cut through the marketing fluff and give you straight, data-backed answers. It scores policies, highlights the hidden loopholes, and uses AI to chat with you to recommend the best match based on your specific needs.
 
