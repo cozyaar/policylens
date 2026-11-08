@@ -73,7 +73,7 @@ overallScore = round(Coverage*0.25 + Claims*0.20 + Restrictions*0.20 + Waiting*0
 
 Aim for 3-5 loopholes ranked by severity. Be honest and critical — this is a trust product.`;
 export async function analyzePolicy(policyQuery: string): Promise<Policy> {
-  const response = await generateWithRetry('gemini-1.5-pro', {
+  const response = await generateWithRetry('gemini-2.5-flash', {
     contents: [{ role: 'user', parts: [{ text: `${ANALYSIS_PROMPT}\n\nAnalyze this Indian health insurance policy using Google Search to find accurate, up-to-date policy documents and brochures:\n"${policyQuery}"\n\nReturn EXACTLY and ONLY the JSON object. No markdown formatting around the JSON.` }] }],
     config: {
       temperature: 0.1,

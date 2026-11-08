@@ -42,7 +42,7 @@ Context: ${context ? JSON.stringify(context) : 'No specific policy selected.'}
       parts: [{ text: message }]
     });
 
-    const response = await generateWithRetry('gemini-1.5-pro', {
+    const response = await generateWithRetry('gemini-2.5-flash', {
       contents: formattedHistory,
       config: {
         systemInstruction: systemInstruction,
