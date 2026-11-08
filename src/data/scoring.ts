@@ -198,7 +198,6 @@ export function personalizeScore(
   }
 
   // Calculate new overall score
-  const weightKeys = Object.keys(DEFAULT_WEIGHTS) as (keyof typeof DEFAULT_WEIGHTS)[];
   const personalizedScore = Math.round(
     dimensionDeltas.reduce((sum, dd) => {
       const weight = DEFAULT_WEIGHTS[dd.name as keyof typeof DEFAULT_WEIGHTS] || 0.2;

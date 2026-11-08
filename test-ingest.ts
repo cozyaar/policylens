@@ -10,6 +10,11 @@ async function testAnalysis() {
     const data = await analyzePolicy("Care Supreme Health Insurance");
     console.log("SUCCESS! Policy analyzed.");
     
+    if (!db) {
+      console.log("DATABASE_URL is not configured; skipping DB save.");
+      process.exit(0);
+    }
+
     console.log("Attempting DB save...");
     await db.insert(policiesTable).values(data).onConflictDoUpdate({
       target: policiesTable.slug,
@@ -17,7 +22,7 @@ async function testAnalysis() {
     });
     console.log("DB save succeeded!");
     process.exit(0);
-  } catch(e: any) {
+  } catch (e: unknown) {
     console.error("ERROR:");
     console.error(e);
     process.exit(1);

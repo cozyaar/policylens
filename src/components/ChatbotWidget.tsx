@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageSquare, X, Send, Loader2, Bot, User } from 'lucide-react';
+import { MessageSquare, X, Send, Bot } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { usePathname } from 'next/navigation';
 import type { Policy } from '@/data/policies';
@@ -77,13 +77,21 @@ export default function ChatbotWidget({ currentPolicy, personalized }: { current
         })
       });
 
-      if (!res.ok) throw new Error('API Error');
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => null);
+        throw new Error(errorData?.error || 'API Error');
+      }
 
       const data = await res.json();
       setMessages(prev => [...prev, { id: Date.now().toString(), role: 'assistant', content: data.response }]);
-    } catch (err) {
+    } catch (err: unknown) {
       console.error(err);
-      setMessages(prev => [...prev, { id: Date.now().toString(), role: 'assistant', content: "I'm having trouble connecting to the server. Try again in a moment." }]);
+      const errMsg = err instanceof Error ? err.message : "I'm having trouble connecting to the server. Try again in a moment.";
+      setMessages(prev => [...prev, {
+        id: Date.now().toString(),
+        role: 'assistant',
+        content: errMsg
+      }]);
     } finally {
       setIsLoading(false);
     }
@@ -152,11 +160,11 @@ export default function ChatbotWidget({ currentPolicy, personalized }: { current
                       <div className="space-y-2 leading-relaxed">
                         <ReactMarkdown 
                           components={{
-                            p: ({node, ...props}) => <p className="mb-2 last:mb-0" {...props} />,
-                            ul: ({node, ...props}) => <ul className="list-disc pl-4 mb-2 last:mb-0 space-y-1" {...props} />,
-                            ol: ({node, ...props}) => <ol className="list-decimal pl-4 mb-2 last:mb-0 space-y-1" {...props} />,
-                            li: ({node, ...props}) => <li className="marker:text-brand" {...props} />,
-                            strong: ({node, ...props}) => <strong className="font-bold text-brand" {...props} />,
+                            p: (props) => <p className="mb-2 last:mb-0" {...props} />,
+                            ul: (props) => <ul className="list-disc pl-4 mb-2 last:mb-0 space-y-1" {...props} />,
+                            ol: (props) => <ol className="list-decimal pl-4 mb-2 last:mb-0 space-y-1" {...props} />,
+                            li: (props) => <li className="marker:text-brand" {...props} />,
+                            strong: (props) => <strong className="font-bold text-brand" {...props} />,
                           }}
                         >
                           {msg.content}

@@ -1,14 +1,18 @@
 import { generateWithRetry } from '@/lib/ai';
 import { NextResponse } from 'next/server';
 
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY!;
-
 export async function POST(request: Request) {
   try {
+    if (!process.env.GEMINI_API_KEY) {
+      return NextResponse.json({
+        error: 'Gemini API key is not configured. Please add GEMINI_API_KEY in your environment variables to enable the AI assistant.'
+      }, { status: 503 });
+    }
+
     const body = await request.json();
     const { message, context, history } = body;
 
-    if (!message) {
+    if (!message || typeof message !== 'string' || !message.trim()) {
       return NextResponse.json({ error: 'Message is required' }, { status: 400 });
     }
 
@@ -27,9 +31,9 @@ Context: ${context ? JSON.stringify(context) : 'No specific policy selected.'}
 `;
 
     // Convert frontend history format to Gemini format
-    const formattedHistory = (history || []).map((msg: any) => ({
+    const formattedHistory = (history || []).map((msg: { role?: string; content?: string }) => ({
       role: msg.role === 'user' ? 'user' : 'model',
-      parts: [{ text: msg.content }]
+      parts: [{ text: msg.content || '' }]
     }));
 
     // Append the new message
@@ -47,9 +51,10 @@ Context: ${context ? JSON.stringify(context) : 'No specific policy selected.'}
       }
     });
 
-    return NextResponse.json({ response: response.text });
-  } catch (error: any) {
+    return NextResponse.json({ response: response.text || 'I could not generate an answer. Please try again.' });
+  } catch (error: unknown) {
     console.error('Chat API Error:', error);
-    return NextResponse.json({ error: error.message || 'Failed to process chat message' }, { status: 500 });
+    const errorMessage = error instanceof Error ? error.message : 'Failed to process chat message';
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }

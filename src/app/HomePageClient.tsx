@@ -1,6 +1,7 @@
 'use client';
 
-import { ShieldAlert, Scale, SlidersHorizontal, ArrowRight, Search, ShieldCheck, BarChart3, FileSearch } from 'lucide-react';
+import { useState } from 'react';
+import { Scale, SlidersHorizontal, ArrowRight, BarChart3, FileSearch, Layers } from 'lucide-react';
 import Link from 'next/link';
 import SearchBar from '@/components/SearchBar';
 import Navbar from '@/components/Navbar';
@@ -24,8 +25,22 @@ function getDimFill(s: number) {
 }
 
 export default function HomePageClient({ policies }: { policies: Policy[] }) {
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [showAll, setShowAll] = useState<boolean>(false);
+
   const insurers = [...new Set(policies.map(p => p.insurer))];
   const sorted = [...policies].sort((a, b) => b.overallScore - a.overallScore);
+
+  const categories = [
+    { id: 'all', label: 'All Plans', count: policies.length },
+    { id: 'comprehensive', label: 'Comprehensive', count: policies.filter(p => p.category === 'comprehensive').length },
+    { id: 'family', label: 'Family', count: policies.filter(p => p.category === 'family').length },
+    { id: 'senior', label: 'Senior Citizen', count: policies.filter(p => p.category === 'senior').length },
+    { id: 'youth', label: 'Youth', count: policies.filter(p => p.category === 'youth').length },
+  ].filter(c => c.count > 0 || c.id === 'all');
+
+  const filtered = sorted.filter(p => selectedCategory === 'all' || p.category === selectedCategory);
+  const displayed = showAll || selectedCategory !== 'all' ? filtered : filtered.slice(0, 6);
 
   return (
     <>
@@ -66,7 +81,7 @@ export default function HomePageClient({ policies }: { policies: Policy[] }) {
         </section>
 
         {/* ── HOW IT WORKS (Story steps) ── */}
-        <section id="how-it-works" className="px-4 sm:px-6 py-20 max-w-3xl mx-auto">
+        <section id="how-it-works" className="px-4 sm:px-6 py-20 max-w-3xl mx-auto scroll-mt-20">
           <ScrollReveal>
             <div className="text-center mb-14">
               <span className="t-micro text-brand mb-2 block">How PolicyLens Works</span>
@@ -146,73 +161,119 @@ export default function HomePageClient({ policies }: { policies: Policy[] }) {
           </section>
         </ScrollReveal>
 
-        {/* ── TOP POLICIES ── */}
-        <section id="top-policies" className="px-4 sm:px-6 pb-20 max-w-6xl mx-auto">
+        {/* ── ALL / TOP POLICIES ── */}
+        <section id="all-policies" className="px-4 sm:px-6 pb-20 max-w-6xl mx-auto scroll-mt-20">
           <ScrollReveal>
-            <div className="flex items-end justify-between mb-8">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
               <div>
                 <span className="t-micro text-brand mb-1 block">Policy Database</span>
-                <h2 className="t-h1 text-text">Top Rated Policies</h2>
+                <h2 className="t-h1 text-text">Ranked Insurance Policies</h2>
                 <p className="t-caption text-text-secondary mt-1">Our highest-scoring plans from Indian insurers, analyzed independently</p>
+              </div>
+
+              {/* Category Filter Pills */}
+              <div className="flex flex-wrap gap-1.5 p-1 bg-bg-surface border border-border rounded-xl">
+                {categories.map(cat => (
+                  <button
+                    key={cat.id}
+                    onClick={() => {
+                      setSelectedCategory(cat.id);
+                      setShowAll(true);
+                    }}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                      selectedCategory === cat.id
+                        ? 'bg-brand text-white shadow-sm'
+                        : 'text-text-secondary hover:text-text hover:bg-bg-muted'
+                    }`}
+                  >
+                    {cat.label} ({cat.count})
+                  </button>
+                ))}
               </div>
             </div>
           </ScrollReveal>
 
-          <StaggerContainer className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {sorted.slice(0, 6).map(p => {
-              return (
-                <StaggerItem key={p.id}>
-                  <Link href={`/policy/${p.slug}`} className="block h-full">
-                    <div className="card h-full flex flex-col group">
-                      {/* Score header */}
-                      <div className="flex items-center justify-between p-4 pb-0">
-                        <div className="w-12 h-12 rounded-xl bg-bg-muted flex items-center justify-center">
-                          <span className={`text-xl font-black ${getScoreColor(p.overallScore)}`}>{p.overallScore}</span>
-                        </div>
-                        <span className="t-micro text-text-muted">{p.insurer}</span>
-                      </div>
-
-                      {/* Name */}
-                      <div className="px-4 pt-3 pb-2">
-                        <h3 className="t-h3 text-text group-hover:text-brand transition-colors">{p.name}</h3>
-                        <p className="t-caption text-text-muted mt-0.5">{p.planType}</p>
-                      </div>
-
-                      {/* Feature chips */}
-                      <div className="px-4 pb-3 flex flex-wrap gap-1.5">
-                        {p.features.roomRentLimit.includes('No limit') && <span className="badge badge-green">No Room Cap</span>}
-                        {p.features.coPayClauses.includes('No co-pay') && <span className="badge badge-green">No Co-pay</span>}
-                        {p.features.preExistingWaiting.includes('48') && <span className="badge badge-red">48mo PED</span>}
-                        {p.features.preExistingWaiting.includes('12') && <span className="badge badge-green">12mo PED</span>}
-                        <span className="badge badge-muted">{p.features.sumInsuredRange}</span>
-                      </div>
-
-                      {/* Mini dimensions / SWOT Breakdown */}
-                      <div className="mx-4 mb-4 p-4 bg-bg-surface border border-border shadow-sm rounded-xl space-y-2.5 relative z-10">
-                        {p.dimensions.slice().sort((a, b) => b.score - a.score).map(d => (
-                          <div key={d.name} className="flex items-center gap-2">
-                            <span className="w-[72px] truncate text-[10px] font-bold text-text-secondary uppercase tracking-wider">
-                              {d.name.replace('Coverage Strength', 'COVERAGE').replace('Claim Friendliness', 'CLAIMS').replace('Hidden Restrictions', 'RULES').replace('Waiting Period Risk', 'WAITING').replace('Value for Money', 'VALUE')}
-                            </span>
-                            <div className="flex-1 h-1.5 rounded-full bg-border-subtle overflow-hidden relative">
-                              <div className={`absolute top-0 left-0 h-full rounded-full ${getDimFill(d.score)}`} style={{ width: `${d.score}%` }} />
-                            </div>
-                            <span className="text-[11px] font-black text-text w-5 text-right">{d.score}</span>
+          {displayed.length === 0 ? (
+            <div className="card-base p-12 text-center text-text-muted flex flex-col items-center">
+              <Layers className="h-10 w-10 mb-3 opacity-30" />
+              <p className="t-body font-semibold">No policies found for this category.</p>
+              <button
+                onClick={() => setSelectedCategory('all')}
+                className="btn-outline mt-4 text-xs"
+              >
+                Show All Plans
+              </button>
+            </div>
+          ) : (
+            <>
+              <StaggerContainer className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {displayed.map(p => (
+                  <StaggerItem key={p.id}>
+                    <Link href={`/policy/${p.slug}`} className="block h-full">
+                      <div className="card h-full flex flex-col group">
+                        {/* Score header */}
+                        <div className="flex items-center justify-between p-4 pb-0">
+                          <div className="w-12 h-12 rounded-xl bg-bg-muted flex items-center justify-center">
+                            <span className={`text-xl font-black ${getScoreColor(p.overallScore)}`}>{p.overallScore}</span>
                           </div>
-                        ))}
-                      </div>
+                          <span className="t-micro text-text-muted">{p.insurer}</span>
+                        </div>
 
-                      {/* Footer */}
-                      <div className="mt-auto px-4 py-3 border-t border-border flex items-center justify-between t-caption font-semibold text-brand">
-                        View Analysis
-                        <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-1 transition-transform duration-200" />
+                        {/* Name */}
+                        <div className="px-4 pt-3 pb-2">
+                          <h3 className="t-h3 text-text group-hover:text-brand transition-colors">{p.name}</h3>
+                          <p className="t-caption text-text-muted mt-0.5">{p.planType}</p>
+                        </div>
+
+                        {/* Feature chips */}
+                        <div className="px-4 pb-3 flex flex-wrap gap-1.5">
+                          {p.features.roomRentLimit.includes('No limit') && <span className="badge badge-green">No Room Cap</span>}
+                          {p.features.coPayClauses.includes('No co-pay') && <span className="badge badge-green">No Co-pay</span>}
+                          {p.features.preExistingWaiting.includes('48') && <span className="badge badge-red">48mo PED</span>}
+                          {p.features.preExistingWaiting.includes('12') && <span className="badge badge-green">12mo PED</span>}
+                          <span className="badge badge-muted">{p.features.sumInsuredRange}</span>
+                        </div>
+
+                        {/* Mini dimensions / SWOT Breakdown */}
+                        <div className="mx-4 mb-4 p-4 bg-bg-surface border border-border shadow-sm rounded-xl space-y-2.5 relative z-10">
+                          {p.dimensions.slice().sort((a, b) => b.score - a.score).map(d => (
+                            <div key={d.name} className="flex items-center gap-2">
+                              <span className="w-[72px] truncate text-[10px] font-bold text-text-secondary uppercase tracking-wider">
+                                {d.name.replace('Coverage Strength', 'COVERAGE').replace('Claim Friendliness', 'CLAIMS').replace('Hidden Restrictions', 'RULES').replace('Waiting Period Risk', 'WAITING').replace('Value for Money', 'VALUE')}
+                              </span>
+                              <div className="flex-1 h-1.5 rounded-full bg-border-subtle overflow-hidden relative">
+                                <div className={`absolute top-0 left-0 h-full rounded-full ${getDimFill(d.score)}`} style={{ width: `${d.score}%` }} />
+                              </div>
+                              <span className="text-[11px] font-black text-text w-5 text-right">{d.score}</span>
+                            </div>
+                          ))}
+                        </div>
+
+                        {/* Footer */}
+                        <div className="mt-auto px-4 py-3 border-t border-border flex items-center justify-between t-caption font-semibold text-brand">
+                          View Analysis
+                          <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-1 transition-transform duration-200" />
+                        </div>
                       </div>
-                    </div>
-                  </Link>
-                </StaggerItem>
-              );
-            })}
-          </StaggerContainer>
+                    </Link>
+                  </StaggerItem>
+                ))}
+              </StaggerContainer>
+
+              {/* Show All / Show Fewer Toggle */}
+              {selectedCategory === 'all' && filtered.length > 6 && (
+                <div className="mt-10 text-center">
+                  <button
+                    onClick={() => setShowAll(!showAll)}
+                    className="btn-outline inline-flex items-center gap-2 text-sm px-6 py-3"
+                  >
+                    {showAll ? 'Show Top 6 Policies' : `View All ${filtered.length} Policies`}
+                    <ArrowRight className={`h-4 w-4 transition-transform ${showAll ? '-rotate-90' : 'rotate-90'}`} />
+                  </button>
+                </div>
+              )}
+            </>
+          )}
         </section>
       </main>
       <Footer />

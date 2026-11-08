@@ -16,7 +16,6 @@ import {
   Policy,
   policies,
   getPolicyBySlug as staticGetBySlug,
-  searchPolicies as staticSearch,
   getAllInsurers as staticGetInsurers,
   getPoliciesByInsurer as staticByInsurer,
   getPoliciesByCategory as staticByCategory,

@@ -66,15 +66,14 @@ export default function SearchBar({ variant = 'default' }: { variant?: 'default'
       const data = await res.json();
       if (!res.ok) throw new Error(data.trace || data.error || 'Ingestion failed');
       handleSelect(data.slug);
-    } catch (e: any) {
+    } catch (e: unknown) {
       console.error(e);
-      alert(`AI Analysis failed: ${e.message}`);
+      const errMsg = e instanceof Error ? e.message : 'Unknown error';
+      alert(`AI Analysis failed: ${errMsg}`);
     } finally {
       setIsIngesting(false);
     }
   };
-
-  const isHero = variant === 'hero';
 
   return (
     <>
@@ -92,7 +91,7 @@ export default function SearchBar({ variant = 'default' }: { variant?: 'default'
         )}
       </AnimatePresence>
 
-      <div className={`relative w-full max-w-lg mx-auto transition-all ${focused ? 'z-50' : 'z-20'}`} ref={ref}>
+      <div className={`relative w-full ${variant === 'hero' ? 'max-w-xl' : 'max-w-lg'} mx-auto transition-all ${focused ? 'z-50' : 'z-20'}`} ref={ref}>
         <div className={`relative flex items-center bg-bg-surface border rounded-xl transition-all duration-200 ${
           focused
             ? 'border-brand shadow-lg ring-1 ring-brand/10'
@@ -161,7 +160,7 @@ export default function SearchBar({ variant = 'default' }: { variant?: 'default'
                     </div>
                     <p className="text-text font-medium mb-1">Policy not found in our database</p>
                     <p className="t-caption text-text-muted mb-4 max-w-[240px]">
-                      Our AI can instantly research and analyze "{query}" for you.
+                      Our AI can instantly research and analyze &ldquo;{query}&rdquo; for you.
                     </p>
                     <button 
                       onClick={handleIngest}

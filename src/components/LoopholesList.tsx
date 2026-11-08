@@ -6,7 +6,7 @@ type ExtendedLoophole = Loophole & {
   customWarning?: string;
 };
 
-export default function LoopholesList({ loopholes, isPersonalized }: { loopholes: ExtendedLoophole[], isPersonalized?: boolean }) {
+export default function LoopholesList({ loopholes }: { loopholes: ExtendedLoophole[]; isPersonalized?: boolean }) {
   return (
     <div className="space-y-4 fade-in">
       {loopholes.map((l, i) => (

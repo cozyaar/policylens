@@ -72,14 +72,14 @@ export default function PersonalizationModal({ isOpen, onClose, onComplete }: Pr
 
   const handleComplete = () => {
     onComplete({
-      ageGroup: (answers.ageGroup as any) || 'young',
-      familyType: (answers.familyType as any) || 'individual',
-      medicalRisk: (answers.medicalRisk as any) || 'none',
-      plannedProcedures: (answers.plannedProcedures as any) || 'no',
-      hospitalPreference: (answers.hospitalPreference as any) || 'any',
-      oopComfort: (answers.oopComfort as any) || 'medium',
-      budget: (answers.budget as any) || 'balanced',
-      priority: (answers.priority as any) || 'smooth_claims',
+      ageGroup: (answers.ageGroup as PersonalizationAnswers['ageGroup']) || 'young',
+      familyType: (answers.familyType as PersonalizationAnswers['familyType']) || 'individual',
+      medicalRisk: (answers.medicalRisk as PersonalizationAnswers['medicalRisk']) || 'none',
+      plannedProcedures: (answers.plannedProcedures as PersonalizationAnswers['plannedProcedures']) || 'no',
+      hospitalPreference: (answers.hospitalPreference as PersonalizationAnswers['hospitalPreference']) || 'any',
+      oopComfort: (answers.oopComfort as PersonalizationAnswers['oopComfort']) || 'medium',
+      budget: (answers.budget as PersonalizationAnswers['budget']) || 'balanced',
+      priority: (answers.priority as PersonalizationAnswers['priority']) || 'smooth_claims',
     });
     setStep(0);
     setAnswers({});

@@ -1,7 +1,6 @@
 'use client';
 
-import { use, useState, useEffect } from 'react';
-import { notFound } from 'next/navigation';
+import { useState, useEffect } from 'react';
 import type { Policy, Loophole } from '@/data/policies';
 import type { PersonalizationAnswers, PersonalizedScore } from '@/data/scoring';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -17,7 +16,7 @@ import PersonalizedResults from '@/components/PersonalizedResults';
 import PairingEngine from '@/components/PairingEngine';
 import ChatbotWidget from '@/components/ChatbotWidget';
 
-import { ArrowLeft, SlidersHorizontal, RefreshCw, ShieldAlert, GitCompare, Layers, BarChart3, FileText, ExternalLink, Download } from 'lucide-react';
+import { ArrowLeft, SlidersHorizontal, RefreshCw, ShieldAlert, GitCompare, Layers, BarChart3, FileText, Download, type LucideIcon } from 'lucide-react';
 import Link from 'next/link';
 
 type Tab = 'dimensions' | 'features' | 'loopholes' | 'alternatives';
@@ -70,7 +69,7 @@ export default function PolicyPageClient({ policy }: { policy: Policy }) {
     ['Renewal', policy.features.renewalAge],
   ];
 
-  const tabs: { id: Tab; label: string; icon: any; count?: number }[] = [
+  const tabs: { id: Tab; label: string; icon: LucideIcon; count?: number }[] = [
     { id: 'dimensions', label: 'Dimensions', icon: BarChart3 },
     { id: 'features', label: 'Features', icon: FileText, count: featureRows.length },
     { id: 'loopholes', label: 'Loopholes', icon: ShieldAlert, count: policy.loopholes.length },

@@ -1,8 +1,6 @@
 import { generateWithRetry } from './ai';
 import type { Policy, PolicyFeatures, ScoreDimension, Loophole, ProfileFit, PairingOption } from '../data/policies';
 
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY!;
-
 const ANALYSIS_PROMPT = `You are PolicyLens — an expert Indian health insurance policy analyst. 
 
 Given the name and details of an Indian health insurance policy, you must produce a COMPLETE structured analysis. You MUST research and use your knowledge of this specific policy to fill in accurate data.
@@ -92,7 +90,7 @@ export async function analyzePolicy(policyQuery: string): Promise<Policy> {
     if (!jsonMatch) throw new Error('No JSON object found in response');
     parsed = JSON.parse(jsonMatch[0]);
   } catch (err) {
-    console.error("Failed to parse Gemini output:", text);
+    console.error("Failed to parse Gemini output:", text, err);
     throw new Error('AI returned an invalid data format.');
   }
 
